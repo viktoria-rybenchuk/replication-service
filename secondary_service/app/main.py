@@ -7,6 +7,7 @@ from .utills import logger
 app = FastAPI()
 message_manager = MessageManager()
 
+
 @app.post('/messages')
 async def add_message(message: Message):
     try:
@@ -19,5 +20,5 @@ async def add_message(message: Message):
 
 
 @app.get('/messages')
-def get_messages() :
+def get_messages():
     return {'messages': message_manager.get_messages()}

@@ -1,5 +1,6 @@
 import asyncio
 
+
 class MessageManager:
     def __init__(self):
         self.messages = []
@@ -7,7 +8,6 @@ class MessageManager:
 
     def get_messages(self):
         return self.messages
-
 
     async def add_message(self, message):
         async with self.lock:
