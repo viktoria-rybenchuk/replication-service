@@ -1,0 +1,19 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: debug-statements
+    -   id: check-yaml
+-   repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+    -   id: black
+        args: [-S]
+        language_version: python3.7
+-   repo: https://github.com/PyCQA/flake8
+    rev: 3.7.6
+    hooks:
+    -   id: flake8
+        args: [--ignore=E741 E501 W503 W605 --max-line-length=500 ]

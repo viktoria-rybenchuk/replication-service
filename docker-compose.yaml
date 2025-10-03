@@ -1,0 +1,43 @@
+version: "3.11"
+
+services:
+  master:
+    build:
+      context: .
+      dockerfile: master_service/Dockerfile
+    container_name: leader
+    ports:
+      - "8000:8000"
+    networks:
+      - replicated-net
+
+  follower_1:
+    build:
+      context: .
+      dockerfile: secondary_service/Dockerfile
+    container_name: follower-1
+    ports:
+      - "8001:8000"
+    networks:
+      - replicated-net
+    depends_on:
+      - master
+    environment:
+      - SERVICE_NAME=Follower-1
+
+  follower_2:
+    build:
+      context: .
+      dockerfile: secondary_service/Dockerfile
+    container_name: follower-2
+    ports:
+      - "8002:8000"
+    networks:
+      - replicated-net
+    depends_on:
+      - master
+    environment:
+      - SERVICE_NAME=Follower-2
+networks:
+    replicated-net:
+      driver: bridge
