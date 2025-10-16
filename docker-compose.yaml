@@ -1,5 +1,3 @@
-version: "3.11"
-
 services:
   master:
     build:
@@ -24,6 +22,7 @@ services:
       - master
     environment:
       - SERVICE_NAME=Follower-1
+      - DELAY=5
 
   follower_2:
     build:
@@ -38,6 +37,7 @@ services:
       - master
     environment:
       - SERVICE_NAME=Follower-2
+      - DELAY=10
 networks:
     replicated-net:
       driver: bridge
