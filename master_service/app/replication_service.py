@@ -61,7 +61,7 @@ class ReplicationManager:
             logger.debug(f"Sending message {message.id} to {endpoint!r}")
             async with session.post(
                 endpoint,
-                json=message.model_dump(),  # ✅ конвертуємо тільки тут
+                json=message.model_dump(),
                 timeout=aiohttp.ClientTimeout(total=timeout),
             ) as response:
                 if response.status == 200:
