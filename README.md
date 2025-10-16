@@ -1,6 +1,6 @@
 # 🌀 Distributed Replication System
 
-A simple async message replication system using **FastAPI**, **aiohttp**, and **Docker Compose**.  
+A simple async message replication system using **FastAPI**, **aiohttp**, and **Docker Compose**.
 One **master** service sends messages to multiple **followers**.
 
 ---
@@ -25,8 +25,8 @@ docker compose up --build
 
 - Master receives messages via `/messages`.
 - Replicates them asynchronously to followers:
-  - `w=1` → background replication  
-  - `w=2` → waits for one follower success  
+  - `w=1` → background replication
+  - `w=2` → waits for one follower success
   - `w=3` → waits for all followers success
 
 ---

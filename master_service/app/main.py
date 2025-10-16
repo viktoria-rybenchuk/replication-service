@@ -16,4 +16,6 @@ def get_messages():
 @app.post("/messages")
 async def add_message(message: MessageBody):
     message_body = message.model_dump()
-    await replication_manager.replicate(message=message_body["content"], replication_count=message_body["w"])
+    await replication_manager.replicate(
+        message=message_body["content"], replication_count=message_body["w"]
+    )
