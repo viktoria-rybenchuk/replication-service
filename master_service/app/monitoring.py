@@ -60,23 +60,24 @@ class HeartbeatManager:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    f"{service.url}/health",
-                    timeout=aiohttp.ClientTimeout(total=5)
+                    f"{service.url}/health", timeout=aiohttp.ClientTimeout(total=5)
                 ) as response:
                     if response.status == 200:
                         self.mark_success(service)
                         if service.just_recovered and self.recovery_callback:
-                            logger.info(f"Triggering message recovery for {service.name}")
+                            logger.info(
+                                f"Triggering message recovery for {service.name}"
+                            )
                             asyncio.create_task(self.recovery_callback(service.name))
                     else:
                         self.mark_failure(service)
-        except Exception as e:
+        except Exception:
             self.mark_failure(service)
 
     async def _send_to_all(self):
         await asyncio.gather(
             *(self._send_heartbeat(s) for s in self.services.values()),
-            return_exceptions=True
+            return_exceptions=True,
         )
 
     async def start(self):

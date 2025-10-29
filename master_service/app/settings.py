@@ -4,5 +4,5 @@ FOLLOWERS_CONFIG = {
     },
     'follower-2': {
         'url': 'http://follower-2:8000',
-    }
+    },
 }

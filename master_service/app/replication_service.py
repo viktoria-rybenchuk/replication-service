@@ -20,8 +20,12 @@ class ReplicationManager:
 
     async def handle_service_recovery(self, follower_name: str):
         logger.info(f"Service recovery triggered for follower: {follower_name}")
-        failed_count = len(self.failed_messages.get(follower_name, {}).get('messages', {}))
-        logger.info(f"Attempting to resend {failed_count} failed messages to {follower_name}")
+        failed_count = len(
+            self.failed_messages.get(follower_name, {}).get('messages', {})
+        )
+        logger.info(
+            f"Attempting to resend {failed_count} failed messages to {follower_name}"
+        )
         await self.send_failed_messages_to_follower(follower_name)
 
     async def send_failed_messages_to_follower(self, follower_name):
@@ -38,7 +42,7 @@ class ReplicationManager:
                     self._send_to_follower(
                         url=self.failed_messages[follower_name]['url'],
                         message=message,
-                        follower_name=follower_name
+                        follower_name=follower_name,
                     )
                 )
                 for msg_id, message in failed_msgs.items()
@@ -55,8 +59,6 @@ class ReplicationManager:
 
         except Exception as e:
             logger.error(f"Resend failed {follower_name}: {e}")
-
-
 
     async def replicate(self, message: str, replication_count: int) -> Message:
         msg = await self.add_message(message)
@@ -94,9 +96,9 @@ class ReplicationManager:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                        endpoint,
-                        json=message.model_dump(),
-                        timeout=aiohttp.ClientTimeout(total=timeout),
+                    endpoint,
+                    json=message.model_dump(),
+                    timeout=aiohttp.ClientTimeout(total=timeout),
                 ) as response:
                     if response.status == 200:
                         logger.info(f"{url} ack msg {message.id}")
@@ -111,10 +113,16 @@ class ReplicationManager:
             logger.error(f"Error {url}: {e}")
             raise
 
-    async def send_message_with_retry(self, follower_name, url, message, timeout, delay, retry):
-        logger.info(f"Retry {retry}/{self.max_retry_time} {follower_name} msg {message.id}")
+    async def send_message_with_retry(
+        self, follower_name, url, message, timeout, delay, retry
+    ):
+        logger.info(
+            f"Retry {retry}/{self.max_retry_time} {follower_name} msg {message.id}"
+        )
         await sleep(delay)
-        return await self._send_to_follower(follower_name, url, message, timeout, delay * 2, retry + 1)
+        return await self._send_to_follower(
+            follower_name, url, message, timeout, delay * 2, retry + 1
+        )
 
     def _queue_failed_message(self, follower_name: str, url: str, message: Message):
         if follower_name not in self.failed_messages:
@@ -124,20 +132,22 @@ class ReplicationManager:
         logger.debug(f"Queued msg {message.id} for {follower_name}")
 
     def _remove_from_failed_queue(self, follower_name: str, message_id: int):
-        if follower_name in self.failed_messages and message_id in self.failed_messages[follower_name]['messages']:
+        if (
+            follower_name in self.failed_messages
+            and message_id in self.failed_messages[follower_name]['messages']
+        ):
             del self.failed_messages[follower_name]['messages'][message_id]
             logger.info(f"Recovered {follower_name} msg {message_id}")
 
     async def _send_to_follower(
-            self,
-            follower_name: str,
-            url: str,
-            message: Message,
-            timeout: int = 10,
-            delay=1,
-            retry=0
+        self,
+        follower_name: str,
+        url: str,
+        message: Message,
+        timeout: int = 10,
+        delay=1,
+        retry=0,
     ) -> bool:
-
         if not self.heartbeat_service.get_service_is_healthy(follower_name):
             logger.warning(f"Unhealthy {follower_name}, queued msg {message.id}")
             self._queue_failed_message(follower_name, url, message)
@@ -149,15 +159,16 @@ class ReplicationManager:
                 self._remove_from_failed_queue(follower_name, message.id)
             return result
 
-        except Exception as e:
+        except Exception:
             if retry >= self.max_retry_time:
                 logger.error(f"Max retry {follower_name} msg {message.id}")
                 self._queue_failed_message(follower_name, url, message)
                 return False
 
             logger.warning(f"Failed {follower_name} msg {message.id}, retrying")
-            return await self.send_message_with_retry(follower_name, url, message, timeout, delay, retry)
-
+            return await self.send_message_with_retry(
+                follower_name, url, message, timeout, delay, retry
+            )
 
     async def _replicate_to_followers(
         self,
@@ -169,8 +180,12 @@ class ReplicationManager:
         )
 
         tasks = [
-            asyncio.create_task(self._send_to_follower(url=value['url'], message=message, follower_name=name))
-            for name, value  in self.follower_config.items()
+            asyncio.create_task(
+                self._send_to_follower(
+                    url=value['url'], message=message, follower_name=name
+                )
+            )
+            for name, value in self.follower_config.items()
         ]
 
         if replication_count == 0:
