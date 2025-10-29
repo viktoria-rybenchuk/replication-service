@@ -28,3 +28,7 @@ async def add_message(message: Message):
 @app.get("/messages")
 def get_messages():
     return {"messages": message_manager.get_messages()}
+
+@app.post("/health")
+async def heartbeat():
+    return Response(status_code=200)

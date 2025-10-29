@@ -8,6 +8,10 @@ services:
       - "8000:8000"
     networks:
       - replicated-net
+    volumes:
+      - ./master_service:/app:ro
+    environment:
+      - PYTHONUNBUFFERED=1
 
   follower_1:
     build:
@@ -20,9 +24,12 @@ services:
       - replicated-net
     depends_on:
       - master
+    volumes:
+      - ./secondary_service:/app:ro
     environment:
       - SERVICE_NAME=Follower-1
-      - DELAY=5
+#      - DELAY=5
+      - PYTHONUNBUFFERED=1
 
   follower_2:
     build:
@@ -35,9 +42,12 @@ services:
       - replicated-net
     depends_on:
       - master
+    volumes:
+      - ./secondary_service:/app:ro
     environment:
       - SERVICE_NAME=Follower-2
-      - DELAY=10
+      - PYTHONUNBUFFERED=1
+      -  DELAY=60
 networks:
-    replicated-net:
-      driver: bridge
+  replicated-net:
+    driver: bridge
