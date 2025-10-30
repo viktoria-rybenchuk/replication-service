@@ -1,5 +1,4 @@
 import asyncio
-from asyncio import sleep
 from typing import List
 
 from .models import Message
