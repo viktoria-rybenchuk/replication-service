@@ -16,9 +16,9 @@ class ServiceStatus:
 
 
 class HeartbeatManager:
-    def __init__(self, config, interval=2):
-        self.config = config
-        self.interval = interval
+    def __init__(self, config):
+        self.followers = config['followers']
+        self.interval = config['interval']
         self._running = False
         self.services = self._register_services()
         self.recovery_callback = None
@@ -26,7 +26,7 @@ class HeartbeatManager:
     def _register_services(self):
         return {
             name: ServiceStatus(name=name, url=value.get("url"))
-            for name, value in self.config.items()
+            for name, value in self.followers.items()
         }
 
     def set_recovery_callback(self, callback):
@@ -34,6 +34,9 @@ class HeartbeatManager:
 
     def get_service_is_healthy(self, follower_name):
         return self.services[follower_name].is_healthy
+
+    def get_alive_replicas(self):
+        return sum(1 for k, v in self.services.items() if v.is_healthy)
 
     def get_just_recovered(self, follower_name):
         return self.services[follower_name].just_recovered

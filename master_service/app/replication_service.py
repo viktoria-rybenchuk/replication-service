@@ -9,14 +9,16 @@ from .utills import logger
 
 class ReplicationManager:
     def __init__(self, heartbeat_service, config):
-        self.follower_config = config
+        self.followers = config['followers']
+        self.write_quorum = config['write_quorum']
+        self.max_retry_time = config['retry_times']
         self.messages: List[Message] = []
         self.next_id: int = 1
         self.lock = asyncio.Lock()
         self.heartbeat_service = heartbeat_service
         self.heartbeat_service.recovery_callback = self.handle_service_recovery
         self.failed_messages = {}
-        self.max_retry_time = 3
+
 
     async def handle_service_recovery(self, follower_name: str):
         logger.info(f"Service recovery triggered for follower: {follower_name}")
@@ -61,12 +63,15 @@ class ReplicationManager:
             logger.error(f"Resend failed {follower_name}: {e}")
 
     async def replicate(self, message: str, replication_count: int) -> Message:
+        if self.heartbeat_service.get_alive_replicas() < self.write_quorum:
+            raise Exception(f"Quorum not met: {self.heartbeat_service.get_alive_replicas()}/{self.write_quorum}")
+
         msg = await self.add_message(message)
         replication_count -= 1
 
         logger.info(
             f"Starting replication for message {msg.id}: {msg.content!r} "
-            f"to {len(self.follower_config)} followers (level={replication_count})"
+            f"to {len(self.followers)} followers (level={replication_count})"
         )
 
         success = await self._replicate_to_followers(msg, replication_count)
@@ -176,7 +181,7 @@ class ReplicationManager:
         replication_count: int,
     ) -> bool:
         logger.info(
-            f"Replicating message to {len(self.follower_config)} followers (need {replication_count})"
+            f"Replicating message to {len(self.followers)} followers (need {replication_count})"
         )
 
         tasks = [
@@ -185,7 +190,7 @@ class ReplicationManager:
                     url=value['url'], message=message, follower_name=name
                 )
             )
-            for name, value in self.follower_config.items()
+            for name, value in self.followers.items()
         ]
 
         if replication_count == 0:

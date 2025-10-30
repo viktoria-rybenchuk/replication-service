@@ -28,7 +28,7 @@ services:
       - ./secondary_service:/app:ro
     environment:
       - SERVICE_NAME=Follower-1
-#      - DELAY=5
+      - DELAY=5
       - PYTHONUNBUFFERED=1
 
   follower_2:
@@ -47,7 +47,7 @@ services:
     environment:
       - SERVICE_NAME=Follower-2
       - PYTHONUNBUFFERED=1
-      -  DELAY=60
+      -  DELAY=10
 networks:
   replicated-net:
     driver: bridge
