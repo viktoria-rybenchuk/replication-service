@@ -4,7 +4,7 @@ from asyncio import sleep
 from fastapi import FastAPI, Response, status
 
 from .message_service import MessageManager
-from .models import Message
+from .models import Message, MessageBatch
 from .utills import logger
 
 app = FastAPI()
@@ -33,3 +33,17 @@ def get_messages():
 @app.post("/health")
 async def heartbeat():
     return Response(status_code=200)
+
+
+@app.post("/messages/batch")
+async def add_messages_batch(batch: MessageBatch):
+    try:
+        for message in batch.messages:
+            await message_manager.add_message(message)
+
+        logger.info(f"Batch of {len(batch.messages)} messages replicated")
+        return Response(status_code=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Failed to replicate message batch: {e}")
+        return Response(status_code=513)

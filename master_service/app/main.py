@@ -32,6 +32,7 @@ async def add_message(message: MessageBody):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.on_event("startup")
 async def on_startup():
     await sleep(10)
